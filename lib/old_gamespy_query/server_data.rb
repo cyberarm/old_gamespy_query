@@ -15,7 +15,6 @@ class OldGameSpyQuery
       end
 
       addr = @address.split(':')
-      puts "#{addr}"
       @socket = UDPSocket.new
       @socket.connect("#{addr[0]}", addr[1].to_i)
       begin
@@ -23,18 +22,16 @@ class OldGameSpyQuery
           @socket.send("\\#{request}\\", 0)
           @data = @socket.recvfrom(4096)
         }
-      rescue Timeout::Error => e
-        puts "#{self.class}: The Server At '#{@address}' Did Not Respond In Time (Within 5 Seconds)"
-        raise
+      rescue Timeout::Error
+        raise Timeout::Error, "#{self.class}: The Server At '#{@address}' Did Not Respond In Time (Within 5 Seconds)"
       end
 
-      begin
-        @data[0].sub!("\\final\\", '')
-        gamespy_query = GameSpy::Parser.new(@data, request)
-        pp gamespy_query.data
-      rescue RuntimeError => e
-        puts e
-      end
+      @data[0].sub!("\\final\\", '')
+      @gamespy_query = OldGameSpyQuery::Parser.new(@data, request).data
+    end
+
+    def data
+      @gamespy_query
     end
   end
 end
