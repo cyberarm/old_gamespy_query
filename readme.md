@@ -8,7 +8,7 @@ Example of querying every server.
 @master_server = OldGameSpyQuery::MasterServer.new
 @master_server.list.each do |addr|
   begin
-    OldGameSpyQuery::ServerData.new("#{addr}").get_server_data(ARGV[0])
+    OldGameSpyQuery::ServerData.new("#{addr}").get_server_data("status")
   rescue => e
     p e
     next
