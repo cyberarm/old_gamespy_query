@@ -21,5 +21,5 @@ end
 ```
 
 # Note
-Querying the master server requires 'gslist'. Also the 'gslist' executable needs to be in the same directory from where your executing your program.
+Querying the master server requires 'gslist' and a modified version of [gamespy_query](https://github.com/SIXNetworks/gamespy_query/pull/1). Also the 'gslist' executable needs to be in the same directory from where your executing your program.
 See http://aluigi.org/papers.htm#gslist.
