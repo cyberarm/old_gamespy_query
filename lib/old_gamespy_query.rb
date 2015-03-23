@@ -1,7 +1,8 @@
-require "gamespy_query"
+require "gamespy_query" # TODO: Make requiring this optional.
 
 require "socket"
 require "timeout"
+require "ostruct"
 
 require_relative "old_gamespy_query/version"
 require_relative "old_gamespy_query/master_server"
