@@ -6,6 +6,13 @@ class OldGameSpyQuery
     end
   end
 
+  class Player
+    attr_accessor :data
+    def initialize(hash)
+      @data = OpenStruct.new(hash)
+    end
+  end
+
   class Parser
     def initialize(socket_array, mode = 'status', multi_packet = false)
       @socket_array = socket_array
@@ -13,9 +20,10 @@ class OldGameSpyQuery
       @multi_packet = multi_packet
       @data   = {}
 
-      @players = {}
+      @players = []
       @status  = {}
       @general = {}
+
       parse
 
       @struct = OldGameSpyQuery::QueryObject.new(@status, @players, @general, @data)
@@ -79,8 +87,9 @@ class OldGameSpyQuery
           if array.find{|string| true if string == "gamename"}
             general_parse(index)
           end
-          if array.find {|string| true if string == ("player_0")}
+          if array.find {|string| true if string.include?("player_")}
             puts "PLAYERS"
+            puts "PACKET ##{index}"
             players_parse(index)
           end
         end
@@ -92,6 +101,7 @@ class OldGameSpyQuery
     def players_parse(_index = 0)
       array  = array_object(_index)
       array.delete(array.first) # Remove blank first item
+      puts "INDEX: #{_index}"
 
       sub_hash = {}
       keys   = []
@@ -108,12 +118,24 @@ class OldGameSpyQuery
         if key.end_with?("#{num}")
           sub_hash["#{key}"] = value
         elsif key.end_with?("#{num+1}")
-          @players["player_#{num}"] = sub_hash
+          _hash = clean_player_hash(sub_hash)
+          @players << OldGameSpyQuery::Player.new(_hash)
           sub_hash = {}
           num+=1
           sub_hash["#{key}"] = value
         end
       end
+    end
+
+    def clean_player_hash(hash)
+      temp_hash = {}
+
+      hash.each_pair do |key, value|
+        array = key.split("_")
+        temp_hash[array[0]] = value
+      end
+
+      return temp_hash
     end
 
     def data
