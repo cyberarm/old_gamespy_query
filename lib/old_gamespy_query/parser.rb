@@ -3,13 +3,15 @@ class OldGameSpyQuery
     attr_accessor :data
     def initialize(status, players, general, data)
       @data = OpenStruct.new(:status => status, :players => players, :general => general, :data => data)
+      return @data
     end
   end
 
-  class Player
+  class PlayerObject
     attr_accessor :data
     def initialize(hash)
       @data = OpenStruct.new(hash)
+      return @data
     end
   end
 
@@ -88,8 +90,6 @@ class OldGameSpyQuery
             general_parse(index)
           end
           if array.find {|string| true if string.include?("player_")}
-            puts "PLAYERS"
-            puts "PACKET ##{index}"
             players_parse(index)
           end
         end
@@ -101,12 +101,17 @@ class OldGameSpyQuery
     def players_parse(_index = 0)
       array  = array_object(_index)
       array.delete(array.first) # Remove blank first item
-      puts "INDEX: #{_index}"
 
       sub_hash = {}
       keys   = []
       values = []
-      num = 0
+      if array.first.include?("_")
+        _num = Integer(array.first.split('_')[1])
+      else
+        _num = 0
+      end
+
+      num = _num
 
       array.each_with_index do |object, index|
         keys   << object if index.even?
@@ -115,14 +120,23 @@ class OldGameSpyQuery
 
       keys.each_with_index do |key, index|
         value = values[index]
+
         if key.end_with?("#{num}")
           sub_hash["#{key}"] = value
         elsif key.end_with?("#{num+1}")
           _hash = clean_player_hash(sub_hash)
-          @players << OldGameSpyQuery::Player.new(_hash)
+          _player = OldGameSpyQuery::PlayerObject.new(_hash)
+          @players << _player
           sub_hash = {}
           num+=1
           sub_hash["#{key}"] = value
+        else
+          unless key == "queryid"
+            puts "Hi, umm, an error: 'key' did not end with 'num' or 'num+1'"
+            puts "Here is the output of: Key:Value-Num"
+            p "#{key}:#{value}-#{num}"
+            puts "-----------------------------------------------------------"
+          end
         end
       end
     end
